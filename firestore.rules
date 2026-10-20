@@ -3,6 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // rooms/{room}/players/{uid}: { name, joinedAt, solved: { card, wisdom, seven } }
     match /rooms/{room}/players/{uid} {
+      // 新增的那一題必須是伺服器時間
+      function addedIsServerTime(k, added) {
+        return !added.hasAny([k]) || request.resource.data.solved[k] == request.time;
+      }
+
       allow read: if true;
 
       allow create: if request.auth != null
@@ -14,7 +19,7 @@ service cloud.firestore {
         && request.resource.data.joinedAt == request.time
         && request.resource.data.solved == {};
 
-      // 只能新增自己的「答對時間」，且一定是伺服器時間、不能改名或刪除紀錄
+      // 只能新增自己的「答對時間」，一次一題，不能改名、改時間或刪除紀錄
       allow update: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['solved'])
@@ -22,7 +27,9 @@ service cloud.firestore {
         && request.resource.data.solved.diff(resource.data.solved).removedKeys().size() == 0
         && request.resource.data.solved.diff(resource.data.solved).changedKeys().size() == 0
         && request.resource.data.solved.diff(resource.data.solved).addedKeys().size() == 1
-        && request.resource.data.solved[request.resource.data.solved.diff(resource.data.solved).addedKeys().toList()[0]] == request.time;
+        && addedIsServerTime('card', request.resource.data.solved.diff(resource.data.solved).addedKeys())
+        && addedIsServerTime('wisdom', request.resource.data.solved.diff(resource.data.solved).addedKeys())
+        && addedIsServerTime('seven', request.resource.data.solved.diff(resource.data.solved).addedKeys());
 
       allow delete: if false;
     }
