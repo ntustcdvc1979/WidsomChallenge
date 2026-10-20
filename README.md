@@ -2,8 +2,8 @@
 
 愛心園遊會「闖關體驗」其中一關的解謎網頁。
 
-- `screen.html` — 投影幕：三題同時顯示、每題即時答對人數、答對率、即時快報、QR Code
-- `index.html` — 玩家手機：輸入暱稱後可任選題目作答
+- `screen.html` — 投影幕：所有題目同時顯示（題數多時自動分排）、每題即時答對人數、答對率、即時快報、QR Code
+- `index.html` — 玩家手機：輸入暱稱後從題目列表任選一題作答
 - 前端：GitHub Pages（純靜態，無需建置）
 - 後端：Firebase Firestore + 匿名登入
 
@@ -15,14 +15,25 @@
 | wisdom | 智慧之問 | img/wisdom.webp | wisdom hunter |
 | seven | 水果之謎 | img/7.webp | seven |
 
-答案在 `js/common.js` 中只存 SHA-256 雜湊。比對時會忽略大小寫、空白，全形字母也算對。要改答案就用 `tools/hash.html` 產生新的雜湊。
+答案在 `js/puzzles.js` 中只存 SHA-256 雜湊。比對時會忽略大小寫、空白，全形字母也算對。
+
+## 新增題目
+
+1. 把圖片轉成 webp 放進 `img/`（cwebp 在 Anaconda 裡就有）：
+   ```
+   cwebp -q 85 新圖片.jpg -o img/新圖片.webp
+   ```
+2. 用瀏覽器開 `tools/hash.html`（線上版：`https://ntustcdvc1979.github.io/WidsomChallenge/tools/hash.html`），填好 id、名稱、提示、圖片檔名、答案（可以填多種寫法），按「產生」。
+3. 把產生的程式碼貼進 `js/puzzles.js` 的 `PUZZLE_LIST`，然後 commit、push。
+
+不用改 Firestore 規則或其他程式。編號（壹、貳、參…）、配色、投影幕排版（1 排最多 4 題，超過會自動分排）都會自動調整。已經上線的題目不要改 `id`，不然舊的答對紀錄會對不上。
 
 ## 設定 Firebase（一次性）
 
 1. 到 [Firebase Console](https://console.firebase.google.com/) 建立專案。
 2. **Build → Authentication → Sign-in method**，啟用「匿名 (Anonymous)」。
 3. **Build → Firestore Database**，建立資料庫（production mode，地區選 `asia-east1`）。
-4. 在 Firestore 的 **Rules** 分頁貼上 `firestore.rules` 的內容，然後按「發布」。
+4. 在 Firestore 的 **Rules** 分頁貼上 `firestore.rules` 的內容，然後按「發布」。（`firestore.rules` 有更新時要再貼一次，Firebase 不會自動讀 repo 裡的檔案。）
 5. **專案設定 → 一般 → 你的應用程式**，新增一個 Web 應用程式，把 config 貼到 `js/firebase-config.js`。
 6. **Authentication → Settings → Authorized domains**，加入 `ntustcdvc1979.github.io`。
 
@@ -37,7 +48,7 @@
 
 - 投影幕按「全螢幕」。點任一題卡片可以放大圖片。
 - 每一梯次開始前按「開新場次」，會產生新的 `?room=` 和新的 QR Code，計數從 0 開始，舊資料仍會保留。
-- 玩家三關全破時，手機會出現「三關全破」畫面，可以給關主看後蓋章。
+- 玩家全部破關時，手機會出現「全部破關」畫面，可以給關主看後蓋章。
 
 ## 注意
 

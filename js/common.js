@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { PUZZLE_LIST } from "./puzzles.js";
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
@@ -13,40 +14,23 @@ export function getRoom() {
   return r.replace(/[^\w-]/g, "").slice(0, 40) || "main";
 }
 
-// 答案只存雜湊，避免玩家看原始碼直接看到答案。
-// 產生方式：開 tools/hash.html 輸入謎題 id 與答案。
-export const PUZZLES = [
-  {
-    id: "card",
-    no: "壹",
-    title: "撲克之謎",
-    hint: "猜一張撲克牌：花色 + 數字",
-    img: "img/one.webp",
-    type: "card",
-    color: "var(--c-pink)",
-    hash: "248d206bd32d2c1ad3e9debd1a1542a2c83076a3dcdf484f2ab60c7126215fad",
-  },
-  {
-    id: "wisdom",
-    no: "貳",
-    title: "智慧之問",
-    hint: "看圖解出英文答案",
-    img: "img/wisdom.webp",
-    type: "text",
-    color: "var(--c-teal)",
-    hash: "5f02def641b8660568d75dc3924b8ae023cd2bc184b1b476983eaf377905e10b",
-  },
-  {
-    id: "seven",
-    no: "參",
-    title: "水果之謎",
-    hint: "請輸入英文答案",
-    img: "img/7.webp",
-    type: "text",
-    color: "var(--c-purple)",
-    hash: "7237bd8e7ec8e2b6f1dc410cf3ccc79913e3cde56e5265e853e7a580861b46f4",
-  },
-];
+// 海報配色輪流套用
+const PALETTE = ["#e0457b", "#1f8a7a", "#8a4fb0", "#3a6fd0", "#e8503a", "#d98a1c", "#2e9b5a", "#b0476a"];
+
+// 1 → 壹、12 → 拾貳、20 → 貳拾
+export function cnNumber(n) {
+  const d = "零壹貳參肆伍陸柒捌玖";
+  if (n < 10) return d[n];
+  if (n < 100) return (n >= 20 ? d[Math.floor(n / 10)] : "") + "拾" + (n % 10 ? d[n % 10] : "");
+  return String(n);
+}
+
+// 答案只存雜湊，避免玩家看原始碼直接看到答案。題目在 js/puzzles.js 編輯。
+export const PUZZLES = PUZZLE_LIST.map((p, i) => ({
+  ...p,
+  no: cnNumber(i + 1),
+  color: p.color || PALETTE[i % PALETTE.length],
+}));
 
 // 全形轉半形、去空白、轉小寫
 export function normalize(s) {

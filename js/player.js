@@ -58,31 +58,53 @@ function startGame(data) {
   updateScore();
 }
 
+// 題目列表（縮圖格）
 function renderList() {
-  $("plist").innerHTML = PUZZLES.map(
+  $("tiles").innerHTML = PUZZLES.map(
     (p) => `
+    <button class="tile paper ${solved[p.id] ? "solved" : ""}" data-id="${p.id}">
+      <span class="tile-img" style="background-image:url('${p.img}')"></span>
+      <span class="tile-name" style="--bg:${p.color}">${p.no}．${escapeHtml(p.title)}</span>
+      <span class="stamp">過關</span>
+    </button>`
+  ).join("");
+  for (const el of document.querySelectorAll(".tile")) el.onclick = () => openPuzzle(el.dataset.id);
+}
+
+// 單題作答
+function openPuzzle(id) {
+  const p = PUZZLES.find((x) => x.id === id);
+  $("detailBody").innerHTML = `
     <article class="pitem paper ${solved[p.id] ? "solved" : ""}" data-id="${p.id}">
-      <div class="pc-label"><span class="brush" style="--bg:${p.color}">${p.no}．${p.title}</span></div>
+      <div class="pc-label"><span class="brush" style="--bg:${p.color}">${p.no}．${escapeHtml(p.title)}</span></div>
       <div class="stamp">過關</div>
-      <div class="hint">${escapeHtml(p.hint)}</div>
-      <img src="${p.img}" alt="${p.title}" loading="lazy">
+      <div class="hint">${escapeHtml(p.hint || "")}</div>
+      <img src="${p.img}" alt="${escapeHtml(p.title)}">
       <div class="answer">${p.type === "card" ? cardPicker() : textInput()}
         <div class="msg"></div>
       </div>
       <div class="solved-tag">答對了！</div>
-    </article>`
-  ).join("");
-
-  for (const el of document.querySelectorAll(".pitem")) {
-    const p = PUZZLES.find((x) => x.id === el.dataset.id);
-    el.querySelector("img").onclick = () => {
-      $("zoom").querySelector("img").src = p.img;
-      $("zoom").classList.remove("hidden");
-    };
-    if (p.type === "card") bindCard(el, p);
-    else bindText(el, p);
-  }
+    </article>`;
+  const el = $("detailBody").querySelector(".pitem");
+  el.querySelector("img").onclick = () => {
+    $("zoom").querySelector("img").src = p.img;
+    $("zoom").classList.remove("hidden");
+  };
+  if (p.type === "card") bindCard(el, p);
+  else bindText(el, p);
+  $("overview").classList.add("hidden");
+  $("detail").classList.remove("hidden");
+  history.pushState({ puzzle: id }, "");
+  scrollTo(0, 0);
 }
+
+function closePuzzle() {
+  $("detail").classList.add("hidden");
+  $("overview").classList.remove("hidden");
+  renderList();
+}
+$("backBtn").onclick = () => history.back();
+addEventListener("popstate", closePuzzle); // 手機返回鍵也能回列表
 $("zoom").onclick = () => $("zoom").classList.add("hidden");
 
 function textInput() {
@@ -124,13 +146,13 @@ const cooldown = {};
 async function submit(el, p, answer) {
   if (!String(answer).trim()) return showMsg(el, "請輸入答案");
   if (Date.now() < (cooldown[p.id] || 0)) return showMsg(el, "休息一下，2 秒後再試");
-  const ok = (await hashAnswer(p.id, answer)) === p.hash;
+  const ok = p.hashes.includes(await hashAnswer(p.id, answer));
   if (!ok) {
     cooldown[p.id] = Date.now() + 2000;
     return showMsg(el, "答錯了，再想想！");
   }
   try {
-    await updateDoc(playerRef, { [`solved.${p.id}`]: serverTimestamp() });
+    await updateDoc(playerRef, { [`solved.${p.id}`]: serverTimestamp(), lastId: p.id });
   } catch (e) {
     console.error(e);
     return showMsg(el, "網路不穩，請再按一次送出");

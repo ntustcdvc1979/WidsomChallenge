@@ -1,13 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // rooms/{room}/players/{uid}: { name, joinedAt, solved: { card, wisdom, seven } }
+    // rooms/{room}/players/{uid}: { name, joinedAt, solved: { <題目id>: 時間 }, lastId }
     match /rooms/{room}/players/{uid} {
-      // 新增的那一題必須是伺服器時間
-      function addedIsServerTime(k, added) {
-        return !added.hasAny([k]) || request.resource.data.solved[k] == request.time;
-      }
-
       allow read: if true;
 
       allow create: if request.auth != null
@@ -19,17 +14,18 @@ service cloud.firestore {
         && request.resource.data.joinedAt == request.time
         && request.resource.data.solved == {};
 
-      // 只能新增自己的「答對時間」，一次一題，不能改名、改時間或刪除紀錄
+      // 一次只能新增一題的答對時間（lastId 指出是哪一題），必須是伺服器時間，
+      // 不能改名、改舊紀錄或刪除紀錄。題目可以任意新增，不用改規則。
       allow update: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['solved'])
-        && request.resource.data.solved.keys().hasOnly(['card', 'wisdom', 'seven'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['solved', 'lastId'])
+        && request.resource.data.lastId is string
+        && request.resource.data.lastId.matches('^[a-z0-9_-]{1,30}$')
+        && request.resource.data.solved.size() <= 100
+        && request.resource.data.solved.diff(resource.data.solved).addedKeys() == [request.resource.data.lastId].toSet()
         && request.resource.data.solved.diff(resource.data.solved).removedKeys().size() == 0
         && request.resource.data.solved.diff(resource.data.solved).changedKeys().size() == 0
-        && request.resource.data.solved.diff(resource.data.solved).addedKeys().size() == 1
-        && addedIsServerTime('card', request.resource.data.solved.diff(resource.data.solved).addedKeys())
-        && addedIsServerTime('wisdom', request.resource.data.solved.diff(resource.data.solved).addedKeys())
-        && addedIsServerTime('seven', request.resource.data.solved.diff(resource.data.solved).addedKeys());
+        && request.resource.data.solved[request.resource.data.lastId] == request.time;
 
       allow delete: if false;
     }

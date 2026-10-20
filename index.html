@@ -7,7 +7,7 @@
   <title>智慧挑戰所</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -18,7 +18,7 @@
               fill="none" stroke="#e8503a" stroke-width="5" stroke-linecap="round"/>
       </svg>
       <h1 class="title">智慧<span class="accent">挑戰所</span></h1>
-      <div class="slogan">動動腦，解謎題，三關任你挑！</div>
+      <div class="slogan">動動腦，解謎題，關關任你挑！</div>
     </header>
 
     <section class="join paper" id="join">
@@ -32,17 +32,23 @@
     <section id="game" class="hidden">
       <div class="me">
         <span>挑戰者：<span class="name" id="meName"></span></span>
-        <span>已解 <span class="score" id="meScore">0</span> / <span id="meTotal">3</span></span>
+        <span>已解 <span class="score" id="meScore">0</span> / <span id="meTotal"></span></span>
       </div>
-      <div class="plist" id="plist"></div>
-      <div class="foot-note">任選一題作答，順序不限</div>
+      <div id="overview">
+        <div class="tiles" id="tiles"></div>
+        <div class="foot-note">點選任一題作答，順序不限</div>
+      </div>
+      <div id="detail" class="hidden">
+        <button class="btn ghost back" id="backBtn">← 返回題目列表</button>
+        <div id="detailBody"></div>
+      </div>
     </section>
   </div>
 
   <div class="zoom hidden" id="zoom"><img alt=""></div>
   <div class="celebrate hidden" id="celebrate">
     <div>
-      <div class="big">三關全破！</div>
+      <div class="big">全部破關！</div>
       <p>恭喜你通過智慧挑戰所<br>請出示此畫面給關主蓋章</p>
       <button class="btn" onclick="this.closest('.celebrate').classList.add('hidden')">好的</button>
     </div>

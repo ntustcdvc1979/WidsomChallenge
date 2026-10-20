@@ -5,8 +5,12 @@ const room = getRoom();
 const board = document.getElementById("board");
 const zoom = document.getElementById("zoom");
 
-// ---- 題目卡 ----
+// ---- 題目卡：依題數自動排版（1 排最多 4 題，超過就分 2、3… 排） ----
+const n = PUZZLES.length;
+const rows = Math.max(1, Math.ceil(n / 4));
+const cols = Math.ceil(n / rows);
 board.innerHTML =
+  `<div class="pgrid" style="--cols:${cols};--rows:${rows};--s:${rows === 1 ? 1 : rows === 2 ? 0.62 : 0.45}">` +
   PUZZLES.map(
     (p) => `
   <section class="pcard paper" data-id="${p.id}" style="--c:${p.color}">
@@ -19,7 +23,7 @@ board.innerHTML =
     </div>
   </section>`
   ).join("") +
-  `
+  `</div>
   <aside class="side">
     <div class="qr-box paper">
       <div id="qr"></div>

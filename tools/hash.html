@@ -3,25 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>答案雜湊產生器</title>
+  <title>新增題目工具</title>
   <meta name="robots" content="noindex">
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
-    input, select, button { font: inherit; padding: 6px 10px; }
-    code { word-break: break-all; background: #f3f3f3; padding: 6px; display: block; margin-top: 12px; }
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input, select, textarea, button { font: inherit; padding: 6px 10px; width: 100%; box-sizing: border-box; }
+    button { width: auto; margin-top: 16px; cursor: pointer; }
+    pre { background: #f3f3f3; padding: 12px; white-space: pre-wrap; word-break: break-all; }
+    small { color: #777; font-weight: 400; }
   </style>
 </head>
 <body>
-  <h1>答案雜湊產生器</h1>
-  <p>把產生的雜湊貼到 <b>js/common.js</b> 對應題目的 <code style="display:inline">hash</code>。撲克牌題答案格式為 <b>花色-點數</b>，例如 <b>club-7</b>（spade / heart / diamond / club；A 2–10 J Q K）。</p>
-  <p>
-    <select id="pid"><option>card</option><option>wisdom</option><option>seven</option></select>
-    <input id="ans" placeholder="答案">
-    <button id="go">產生</button>
-  </p>
-  <code id="out"></code>
+  <h1>新增題目工具</h1>
+  <p>填好後按「產生」，把下方程式碼貼進 <b>js/puzzles.js</b> 的 <code>PUZZLE_LIST</code> 陣列。答案只會以雜湊存放。</p>
+
+  <label>id <small>英文小寫、數字、- 或 _，上線後不要改</small><input id="id" placeholder="例如 riddle4"></label>
+  <label>題目名稱<input id="title" placeholder="例如 燈謎之謎"></label>
+  <label>提示<input id="hint" placeholder="例如 請輸入中文答案"></label>
+  <label>圖片檔名 <small>放在 img/ 資料夾</small><input id="img" placeholder="例如 riddle4.webp"></label>
+  <label>作答方式
+    <select id="type"><option value="text">文字作答</option><option value="card">撲克牌（花色 + 點數）</option></select>
+  </label>
+  <label>正確答案 <small>一行一個，多種寫法都算對。撲克牌格式：club-7（spade / heart / diamond / club；a 2–10 j q k）</small>
+    <textarea id="answers" rows="3"></textarea>
+  </label>
+  <button id="go">產生</button>
+  <pre id="out"></pre>
+
   <script type="module">
-    // 與 js/common.js 相同的正規化與雜湊，不載入 Firebase
+    // 與 js/common.js 相同的正規化與雜湊
     const normalize = (s) => String(s)
       .replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
       .replace(/\s+/g, "").toLowerCase();
@@ -29,9 +40,23 @@
       const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`wisdom-challenge|${id}|${normalize(a)}`));
       return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
     }
+    const v = (id) => document.getElementById(id).value.trim();
     document.getElementById("go").onclick = async () => {
-      document.getElementById("out").textContent =
-        await hashAnswer(document.getElementById("pid").value, document.getElementById("ans").value);
+      const id = v("id");
+      if (!/^[a-z0-9_-]{1,30}$/.test(id)) return (out.textContent = "id 只能用英文小寫、數字、- 或 _");
+      const answers = v("answers").split("\n").map((s) => s.trim()).filter(Boolean);
+      if (!answers.length) return (out.textContent = "請輸入答案");
+      const hashes = [...new Set(await Promise.all(answers.map((a) => hashAnswer(id, a))))];
+      out.textContent = `  {
+    id: ${JSON.stringify(id)},
+    title: ${JSON.stringify(v("title"))},
+    hint: ${JSON.stringify(v("hint"))},
+    img: ${JSON.stringify("img/" + v("img").replace(/^img\//, ""))},
+    type: ${JSON.stringify(v("type"))},
+    hashes: [
+${hashes.map((h) => `      "${h}",`).join("\n")}
+    ],
+  },`;
     };
   </script>
 </body>

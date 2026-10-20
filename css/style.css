@@ -13,9 +13,10 @@
   --ink: #3a2e22;
   --muted: #8a7a66;
   --ok: #2e9b5a;
-  --font-brush: "Zhi Mang Xing", "Ma Shan Zheng", "Noto Serif TC", serif;
-  --font-title: "Ma Shan Zheng", "Noto Serif TC", serif;
-  --font-body: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif;
+  /* 全站統一字型：霞鶩文楷（繁中） */
+  --font: "LXGW WenKai TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --font-title: var(--font);
+  --font-body: var(--font);
 }
 
 * { box-sizing: border-box; }
@@ -74,6 +75,7 @@ body {
   border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px;
   transform: rotate(-1.5deg);
   box-shadow: 4px 4px 0 rgba(0,0,0,.06);
+  font-weight: 700;
   letter-spacing: .08em;
   white-space: nowrap;
 }
@@ -173,22 +175,31 @@ body {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 17vw;
+  grid-template-columns: 1fr 17vw;
   gap: 1.6vw;
+  min-height: 0;
+}
+
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  column-gap: 1.6vw;
+  row-gap: calc(5vh * var(--s));
   min-height: 0;
 }
 
 .pcard {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  padding: 2vh 1.2vw 2vh;
+  padding: calc(2vh * var(--s)) 1.2vw;
   min-height: 0;
   cursor: zoom-in;
 }
-.pcard .pc-label { text-align: center; margin-top: -4.2vh; }
-.pcard .pc-label .brush { font-size: 3.4vh; }
+.pcard .pc-label { text-align: center; margin-top: calc(-4.2vh * var(--s)); }
+.pcard .pc-label .brush { font-size: calc(3.4vh * max(var(--s), .75)); }
 .pcard .pc-img {
-  margin: 1.6vh 0;
+  margin: calc(1.6vh * var(--s)) 0;
   min-height: 0;
   border-radius: 14px;
   background: #fff center / contain no-repeat;
@@ -198,11 +209,11 @@ body {
 .pcard .count {
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 8.5vh;
+  font-size: calc(8.5vh * var(--s));
   line-height: 1;
   color: var(--c);
 }
-.pcard .count small { font-family: var(--font-title); font-weight: 400; font-size: 3.2vh; color: var(--ink); margin-left: .2em; }
+.pcard .count small { font-family: var(--font-title); font-weight: 700; font-size: calc(3.2vh * max(var(--s), .7)); color: var(--ink); margin-left: .2em; }
 .pcard .bar {
   height: 1.3vh;
   border-radius: 99px;
@@ -217,7 +228,7 @@ body {
   border-radius: inherit;
   transition: width .6s cubic-bezier(.2,.8,.2,1);
 }
-.pcard .pct { font-size: 2vh; color: var(--muted); margin-top: .6vh; }
+.pcard .pct { font-size: calc(2vh * max(var(--s), .8)); color: var(--muted); margin-top: .6vh; }
 .pcard.bump .count { animation: bump .6s; }
 @keyframes bump {
   0% { transform: scale(1); }
@@ -238,7 +249,7 @@ body {
 .qr-box .qr-url { font-size: 1.4vh; color: var(--muted); word-break: break-all; }
 
 .feed { padding: 1.6vh 1vw; min-height: 0; display: flex; flex-direction: column; }
-.feed h3 { margin: 0 0 1vh; font-family: var(--font-title); font-weight: 400; font-size: 2.8vh; color: var(--c-navy); text-align: center; }
+.feed h3 { margin: 0 0 1vh; font-family: var(--font-title); font-weight: 700; font-size: 2.8vh; color: var(--c-navy); text-align: center; }
 .feed ul { list-style: none; margin: 0; padding: 0; overflow: hidden; flex: 1; }
 .feed li {
   font-size: 1.9vh;
@@ -285,7 +296,7 @@ body {
 .player header .slogan { font-size: .9rem; margin-top: 8px; }
 
 .join { padding: 26px 20px 22px; text-align: center; }
-.join h2 { margin: 0 0 4px; font-family: var(--font-title); font-weight: 400; font-size: 1.6rem; color: var(--c-navy); }
+.join h2 { margin: 0 0 4px; font-family: var(--font-title); font-weight: 700; font-size: 1.6rem; color: var(--c-navy); }
 .join p { margin: 0 0 16px; color: var(--muted); font-size: .95rem; }
 .join .btn { margin-top: 14px; width: 100%; font-size: 1.1rem; }
 
@@ -297,7 +308,40 @@ body {
 .me .name { font-weight: 700; }
 .me .score { font-weight: 700; color: var(--c-red); font-size: 1.4rem; }
 
-.plist { display: grid; gap: 26px; }
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.tile {
+  font: inherit;
+  border: 0;
+  padding: 10px 10px 12px;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  text-align: center;
+  color: var(--ink);
+}
+.tile-img {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  background: #fff center / contain no-repeat;
+  box-shadow: inset 0 0 0 1px #efe3c6;
+}
+.tile-name {
+  justify-self: center;
+  font-weight: 700;
+  font-size: .95rem;
+  color: #fff;
+  background: var(--bg);
+  padding: .15em .8em .2em;
+  border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tile .stamp { width: 52px; height: 52px; font-size: 1.05rem; right: 6px; top: 6px; }
+.tile.solved .tile-img { opacity: .55; }
+.back { margin-bottom: 26px; font-size: .95rem; padding: .5em 1.2em; }
 
 .pitem { padding: 22px 14px 14px; }
 .pitem .pc-label { position: absolute; top: -16px; left: 14px; }
@@ -321,7 +365,7 @@ body {
   color: var(--ok);
 }
 .pitem.solved .solved-tag { display: block; }
-.pitem .stamp {
+.stamp {
   display: none;
   position: absolute; right: 10px; top: 8px;
   width: 64px; height: 64px;
@@ -334,7 +378,7 @@ body {
   transform: rotate(-14deg);
   background: rgba(255,255,255,.7);
 }
-.pitem.solved .stamp { display: grid; animation: stamp .35s ease-out; }
+.solved > .stamp { display: grid; animation: stamp .35s ease-out; }
 @keyframes stamp { from { transform: rotate(-14deg) scale(2.2); opacity: 0; } }
 
 /* 撲克牌選擇 */
