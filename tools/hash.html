@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>答案雜湊產生器</title>
+  <meta name="robots" content="noindex">
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+    input, select, button { font: inherit; padding: 6px 10px; }
+    code { word-break: break-all; background: #f3f3f3; padding: 6px; display: block; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>答案雜湊產生器</h1>
+  <p>把產生的雜湊貼到 <b>js/common.js</b> 對應題目的 <code style="display:inline">hash</code>。撲克牌題答案格式為 <b>花色-點數</b>，例如 <b>club-7</b>（spade / heart / diamond / club；A 2–10 J Q K）。</p>
+  <p>
+    <select id="pid"><option>card</option><option>wisdom</option><option>seven</option></select>
+    <input id="ans" placeholder="答案">
+    <button id="go">產生</button>
+  </p>
+  <code id="out"></code>
+  <script type="module">
+    // 與 js/common.js 相同的正規化與雜湊，不載入 Firebase
+    const normalize = (s) => String(s)
+      .replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+      .replace(/\s+/g, "").toLowerCase();
+    async function hashAnswer(id, a) {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`wisdom-challenge|${id}|${normalize(a)}`));
+      return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+    document.getElementById("go").onclick = async () => {
+      document.getElementById("out").textContent =
+        await hashAnswer(document.getElementById("pid").value, document.getElementById("ans").value);
+    };
+  </script>
+</body>
+</html>

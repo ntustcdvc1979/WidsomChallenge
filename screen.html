@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>智慧挑戰所｜投影幕</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+</head>
+<body>
+  <div class="screen">
+    <header>
+      <div class="head-left">
+        <div class="stat-pill">挑戰者 <b id="total">0</b> 人</div>
+        <div class="stat-pill">三關全破 <b id="allclear">0</b> 人</div>
+      </div>
+      <div class="head-center">
+        <svg class="heart-ribbon" viewBox="0 0 120 60" aria-hidden="true">
+          <path d="M5 50 C30 45 45 48 60 40 C40 25 35 5 50 6 C58 7 60 16 60 20 C60 16 62 7 70 6 C85 5 80 25 60 40 C75 48 90 45 115 50"
+                fill="none" stroke="#e8503a" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <h1 class="title" style="font-size:9vh">智慧<span class="accent">挑戰所</span></h1>
+        <div class="slogan">動動腦，解謎題，三關任你挑！</div>
+      </div>
+      <div class="head-right"><div class="lantern">闖關</div></div>
+    </header>
+
+    <main class="board" id="board"></main>
+
+    <footer>
+      <div>手機掃描 QR Code 加入，任選一題作答，答對即時顯示</div>
+      <div class="tools">
+        <span id="roomLabel"></span>
+        <button class="btn ghost" id="fullscreen">全螢幕</button>
+        <button class="btn ghost" id="newRoom">開新場次</button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="zoom hidden" id="zoom"><img alt=""></div>
+
+  <script type="module" src="js/screen.js"></script>
+</body>
+</html>
