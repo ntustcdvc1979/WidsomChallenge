@@ -5,7 +5,7 @@
 //  title  題目名稱（投影幕、手機都會顯示）
 //  hint   作答提示（手機上顯示）
 //  img    圖片路徑，建議 webp
-//  type   "text" 文字作答 ／ "card" 撲克牌（花色 + 點數）
+//  type   "text" 文字作答 ／ "number" 數字作答（手機跳出數字鍵盤）／ "card" 撲克牌（花色 + 點數）
 //  hashes 正確答案的雜湊，可放多個（多種答案都算對）
 //         用 tools/hash.html 產生
 //  color  （選填）標籤顏色，不填會自動輪流配色
@@ -45,5 +45,13 @@ export const PUZZLE_LIST = [
     img: "img/bear.webp",
     type: "text",
     hashes: ["bf3ff1f31e28f121f21711ba5981da102135c288f650a75684bc3ea70708b653"],
+  },
+  {
+    id: "colors",
+    title: "色彩之謎",
+    hint: "猜一組 5 位數字",
+    img: "img/69253.webp",
+    type: "number",
+    hashes: ["e31751892b76479f4e1e2d12b0e5c71371f537c3d4dc32500f1d7c3b6bcef644"],
   },
 ];

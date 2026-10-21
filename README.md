@@ -15,6 +15,7 @@
 | wisdom | 智慧之問 | img/wisdom.webp | wisdom hunter |
 | seven | 水果之謎 | img/7.webp | seven |
 | bear | 方塊之謎 | img/bear.webp | bear |
+| colors | 色彩之謎 | img/69253.webp | 69253 |
 
 答案在 `js/puzzles.js` 中只存 SHA-256 雜湊。比對時英文大小寫都接受（BEAR、bear、Bear 都算對），空白和全形字母也不影響。
 
