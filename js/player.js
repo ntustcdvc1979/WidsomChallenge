@@ -160,7 +160,7 @@ addEventListener("popstate", closePuzzle); // 手機返回鍵也能回列表
 $("zoom").onclick = () => $("zoom").classList.add("hidden");
 
 function textInput() {
-  return `<div class="row"><input class="input" placeholder="輸入答案" autocomplete="off" autocapitalize="off"><button class="btn">送出</button></div>`;
+  return `<div class="row"><input class="input" placeholder="輸入答案（英文大小寫皆可）" autocomplete="off" autocapitalize="off"><button class="btn">送出</button></div>`;
 }
 
 function cardPicker() {

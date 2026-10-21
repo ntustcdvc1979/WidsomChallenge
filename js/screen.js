@@ -15,6 +15,7 @@ board.innerHTML =
     (p) => `
   <section class="pcard paper" data-id="${p.id}" style="--c:${p.color}">
     <div class="pc-label"><span class="brush" style="--bg:${p.color}">${p.no}．${p.title}</span></div>
+    <div class="pc-hint">${escapeHtml(p.hint || "")}</div>
     <div class="pc-img" style="background-image:url('${p.img}')"></div>
     <div class="pc-foot">
       <div class="count"><span class="n">0</span><small>人答對</small></div>

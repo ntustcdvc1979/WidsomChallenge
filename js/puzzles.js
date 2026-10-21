@@ -17,7 +17,7 @@ export const PUZZLE_LIST = [
   {
     id: "card",
     title: "撲克之謎",
-    hint: "猜一張撲克牌：花色 + 數字",
+    hint: "猜一張撲克牌",
     img: "img/one.webp",
     type: "card",
     hashes: ["248d206bd32d2c1ad3e9debd1a1542a2c83076a3dcdf484f2ab60c7126215fad"],
@@ -25,7 +25,7 @@ export const PUZZLE_LIST = [
   {
     id: "wisdom",
     title: "智慧之問",
-    hint: "看圖解出英文答案",
+    hint: "猜 2 個英文單字",
     img: "img/wisdom.webp",
     type: "text",
     hashes: ["5f02def641b8660568d75dc3924b8ae023cd2bc184b1b476983eaf377905e10b"],
@@ -33,7 +33,7 @@ export const PUZZLE_LIST = [
   {
     id: "seven",
     title: "水果之謎",
-    hint: "請輸入英文答案",
+    hint: "猜 1 個英文單字",
     img: "img/7.webp",
     type: "text",
     hashes: ["7237bd8e7ec8e2b6f1dc410cf3ccc79913e3cde56e5265e853e7a580861b46f4"],
@@ -41,7 +41,7 @@ export const PUZZLE_LIST = [
   {
     id: "bear",
     title: "方塊之謎",
-    hint: "請輸入英文答案",
+    hint: "猜 1 個英文單字",
     img: "img/bear.webp",
     type: "text",
     hashes: ["bf3ff1f31e28f121f21711ba5981da102135c288f650a75684bc3ea70708b653"],
