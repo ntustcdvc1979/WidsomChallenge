@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, getDocs, setDoc, collection, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { db, auth, getRoom, PUZZLES, hashAnswer, escapeHtml } from "./common.js";
 
@@ -14,7 +14,12 @@ const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
 let uid = null;
 let playerRef = null;
+let myName = "";
 let solved = {};
+// 答對但還沒成功寫到 Firebase 的題目，存在手機上，連線恢復後自動補送
+const PENDING_KEY = `wc-pending-${room}`;
+let pending = new Set(JSON.parse(localStorage.getItem(PENDING_KEY) || "[]"));
+const savePending = () => localStorage.setItem(PENDING_KEY, JSON.stringify([...pending]));
 
 $("meTotal").textContent = PUZZLES.length;
 $("nameInput").value = localStorage.getItem("wc-name") || "";
@@ -25,6 +30,7 @@ onAuthStateChanged(auth, async (user) => {
   playerRef = doc(db, "rooms", room, "players", uid);
   const snap = await getDoc(playerRef);
   if (snap.exists()) startGame(snap.data());
+  else pending.clear(), savePending();
 });
 signInAnonymously(auth).catch((e) => {
   $("joinMsg").textContent = "連線失敗，請重新整理";
@@ -37,7 +43,7 @@ $("joinBtn").onclick = async () => {
   if (!uid) return ($("joinMsg").textContent = "連線中，請稍候再按一次");
   $("joinBtn").disabled = true;
   try {
-    const data = { name, joinedAt: serverTimestamp(), solved: {} };
+    const data = { name, joinedAt: serverTimestamp() };
     await setDoc(playerRef, data);
     localStorage.setItem("wc-name", name);
     startGame(data);
@@ -49,14 +55,60 @@ $("joinBtn").onclick = async () => {
 };
 $("nameInput").addEventListener("keydown", (e) => e.key === "Enter" && $("joinBtn").click());
 
-function startGame(data) {
-  solved = { ...(data.solved || {}) };
+async function startGame(data) {
+  myName = data.name;
   $("join").classList.add("hidden");
   $("game").classList.remove("hidden");
-  $("meName").textContent = data.name;
+  $("meName").textContent = myName;
+  for (const id of pending) solved[id] = true;
   renderList();
   updateScore();
+  // 讀回已答對的題目（換頁、重新整理後不會消失）
+  try {
+    const mine = await getDocs(query(collection(db, "rooms", room, "solves"), where("uid", "==", uid)));
+    mine.forEach((d) => (solved[d.data().puzzle] = true));
+    if ($("detail").classList.contains("hidden")) renderList();
+    updateScore();
+  } catch (e) {
+    console.error(e);
+  }
+  flushPending();
 }
+
+// 寫入一筆答對紀錄：rooms/{room}/solves/{uid}_{題目id}
+async function saveSolve(pid) {
+  const ref = doc(db, "rooms", room, "solves", `${uid}_${pid}`);
+  try {
+    await setDoc(ref, { uid, puzzle: pid, name: myName, at: serverTimestamp() });
+  } catch (e) {
+    // 已經寫過（例如重送）規則會拒絕覆寫，這時檢查是否已存在
+    const snap = await getDoc(ref).catch(() => null);
+    if (!snap?.exists()) throw e;
+  }
+}
+
+let flushing = false;
+async function flushPending() {
+  if (flushing || !pending.size) return updateSync();
+  flushing = true;
+  for (const pid of [...pending]) {
+    try {
+      await saveSolve(pid);
+      pending.delete(pid);
+      savePending();
+    } catch (e) {
+      console.error("同步失敗", pid, e.code || e);
+    }
+  }
+  flushing = false;
+  updateSync();
+  if (pending.size) setTimeout(flushPending, 5000);
+}
+
+function updateSync() {
+  $("syncNote").textContent = pending.size ? "成績上傳中…" : "";
+}
+addEventListener("online", flushPending);
 
 // 題目列表（縮圖格）
 function renderList() {
@@ -151,13 +203,11 @@ async function submit(el, p, answer) {
     cooldown[p.id] = Date.now() + 2000;
     return showMsg(el, "答錯了，再想想！");
   }
-  try {
-    await updateDoc(playerRef, { [`solved.${p.id}`]: serverTimestamp(), lastId: p.id });
-  } catch (e) {
-    console.error(e);
-    return showMsg(el, "網路不穩，請再按一次送出");
-  }
+  // 答對就立即顯示，成績在背景上傳（失敗會自動重試，不影響玩家）
   solved[p.id] = true;
+  pending.add(p.id);
+  savePending();
+  flushPending();
   el.classList.add("solved");
   updateScore();
   navigator.vibrate?.(120);

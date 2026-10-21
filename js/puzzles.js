@@ -38,4 +38,12 @@ export const PUZZLE_LIST = [
     type: "text",
     hashes: ["7237bd8e7ec8e2b6f1dc410cf3ccc79913e3cde56e5265e853e7a580861b46f4"],
   },
+  {
+    id: "bear",
+    title: "方塊之謎",
+    hint: "請輸入英文答案",
+    img: "img/bear.webp",
+    type: "text",
+    hashes: ["bf3ff1f31e28f121f21711ba5981da102135c288f650a75684bc3ea70708b653"],
+  },
 ];

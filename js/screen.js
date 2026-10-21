@@ -67,24 +67,36 @@ document.getElementById("newRoom").onclick = () => {
 };
 
 // ---- 即時統計 ----
+// players：加入的人（算總人數）；solves：每一筆答對紀錄 {uid, puzzle, name, at}
 const prev = {};
 const seen = new Set();
 let first = true;
+let total = 0;
+let solves = [];
 const feed = document.getElementById("feed");
 
 onSnapshot(collection(db, "rooms", room, "players"), (snap) => {
-  const players = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  const total = players.length;
+  total = snap.size;
+  render();
+});
+onSnapshot(collection(db, "rooms", room, "solves"), (snap) => {
+  solves = snap.docs.map((d) => d.data()).filter((s) => PUZZLES.some((q) => q.id === s.puzzle));
+  render();
+  first = false; // 第一次載入的舊紀錄不播動畫
+});
+
+function render() {
   document.getElementById("total").textContent = total;
-  document.getElementById("allclear").textContent = players.filter((p) =>
-    PUZZLES.every((q) => p.solved?.[q.id])
-  ).length;
+
+  const byUser = {};
+  for (const s of solves) (byUser[s.uid] ||= new Set()).add(s.puzzle);
+  document.getElementById("allclear").textContent = Object.values(byUser).filter((set) => set.size >= PUZZLES.length).length;
 
   for (const q of PUZZLES) {
-    const n = players.filter((p) => p.solved?.[q.id]).length;
+    const n = solves.filter((s) => s.puzzle === q.id).length;
     const card = board.querySelector(`.pcard[data-id="${q.id}"]`);
     card.querySelector(".n").textContent = n;
-    const pct = total ? Math.round((n / total) * 100) : 0;
+    const pct = total ? Math.min(100, Math.round((n / total) * 100)) : 0;
     card.querySelector(".bar i").style.width = pct + "%";
     card.querySelector(".pct").textContent = `答對率 ${pct}%`;
     if (prev[q.id] !== undefined && n > prev[q.id]) {
@@ -96,21 +108,15 @@ onSnapshot(collection(db, "rooms", room, "players"), (snap) => {
   }
 
   // 快報：依答對時間排序，最新在上
-  const events = [];
-  for (const p of players) {
-    for (const q of PUZZLES) {
-      const t = p.solved?.[q.id];
-      if (t) events.push({ key: `${p.id}:${q.id}`, name: p.name, q, t: t.toMillis ? t.toMillis() : 0 });
-    }
-  }
-  events.sort((a, b) => b.t - a.t);
+  const events = solves
+    .map((s) => ({ key: `${s.uid}:${s.puzzle}`, name: s.name, q: PUZZLES.find((q) => q.id === s.puzzle), t: s.at?.toMillis?.() ?? Date.now() }))
+    .sort((a, b) => b.t - a.t);
   feed.innerHTML = events
     .slice(0, 30)
     .map(
       (e) =>
-        `<li style="--c:${e.q.color}"${seen.has(e.key) || first ? ' class="old"' : ""}><span class="dot"></span><span class="who">${escapeHtml(e.name)}</span> 解開了「${e.q.title}」</li>`
+        `<li style="--c:${e.q.color}"${seen.has(e.key) || first ? ' class="old"' : ""}><span class="dot"></span><span class="who">${escapeHtml(e.name)}</span> 解開了「${escapeHtml(e.q.title)}」</li>`
     )
     .join("");
   events.forEach((e) => seen.add(e.key));
-  first = false;
-});
+}

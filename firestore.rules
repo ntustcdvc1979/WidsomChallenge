@@ -1,33 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // rooms/{room}/players/{uid}: { name, joinedAt, solved: { <題目id>: 時間 }, lastId }
+
+    // 玩家：rooms/{room}/players/{uid} = { name, joinedAt }
     match /rooms/{room}/players/{uid} {
       allow read: if true;
-
       allow create: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['name', 'joinedAt', 'solved'])
+        && request.resource.data.keys().hasOnly(['name', 'joinedAt'])
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 12
-        && request.resource.data.joinedAt == request.time
-        && request.resource.data.solved == {};
+        && request.resource.data.joinedAt == request.time;
+      allow update, delete: if false;
+    }
 
-      // 一次只能新增一題的答對時間（lastId 指出是哪一題），必須是伺服器時間，
-      // 不能改名、改舊紀錄或刪除紀錄。題目可以任意新增，不用改規則。
-      allow update: if request.auth != null
-        && request.auth.uid == uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['solved', 'lastId'])
-        && request.resource.data.lastId is string
-        && request.resource.data.lastId.matches('^[a-z0-9_-]{1,30}$')
-        && request.resource.data.solved.size() <= 100
-        && request.resource.data.solved.diff(resource.data.solved).addedKeys() == [request.resource.data.lastId].toSet()
-        && request.resource.data.solved.diff(resource.data.solved).removedKeys().size() == 0
-        && request.resource.data.solved.diff(resource.data.solved).changedKeys().size() == 0
-        && request.resource.data.solved[request.resource.data.lastId] == request.time;
-
-      allow delete: if false;
+    // 答對紀錄：rooms/{room}/solves/{uid}_{題目id} = { uid, puzzle, name, at }
+    // 每人每題只能寫一次、只能寫自己的；新增題目不用改規則
+    match /rooms/{room}/solves/{solveId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 'puzzle', 'name', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.puzzle is string
+        && request.resource.data.puzzle.matches('^[a-z0-9_-]{1,30}$')
+        && solveId == request.auth.uid + '_' + request.resource.data.puzzle
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 12
+        && request.resource.data.at == request.time
+        && exists(/databases/$(database)/documents/rooms/$(room)/players/$(request.auth.uid));
+      allow update, delete: if false;
     }
   }
 }
