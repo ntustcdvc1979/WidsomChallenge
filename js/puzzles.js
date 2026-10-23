@@ -8,6 +8,7 @@
 //  type   "text" 文字作答 ／ "number" 數字作答（手機跳出數字鍵盤）／ "card" 撲克牌（花色 + 點數）
 //  hashes 正確答案的雜湊，可放多個（多種答案都算對）
 //         用 tools/hash.html 產生
+//  placeholder （選填）手機輸入框的提示文字
 //  color  （選填）標籤顏色，不填會自動輪流配色
 //
 //  順序就是顯示順序，編號（壹、貳、參…）會自動產生。
@@ -53,5 +54,22 @@ export const PUZZLE_LIST = [
     img: "img/69253.webp",
     type: "number",
     hashes: ["e31751892b76479f4e1e2d12b0e5c71371f537c3d4dc32500f1d7c3b6bcef644"],
+  },
+  {
+    id: "nervous",
+    title: "漢字之謎",
+    hint: "猜 2 個中文字",
+    placeholder: "輸入中文答案",
+    img: "img/nervous.webp",
+    type: "text",
+    hashes: ["9c5d6ac81bbf80065d10aa20d037f0faeeccbed2fce9074f0537cdd93a119f52"],
+  },
+  {
+    id: "shapes",
+    title: "圖形之謎",
+    hint: "猜一組 4 位數字",
+    img: "img/5215.webp",
+    type: "number",
+    hashes: ["ace028e31963d6292916e62f69ca57ae4458e90218ab2475427ea54cd1360ff4"],
   },
 ];

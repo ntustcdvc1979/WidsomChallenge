@@ -132,7 +132,7 @@ function openPuzzle(id) {
       <div class="stamp">過關</div>
       <div class="hint">${escapeHtml(p.hint || "")}</div>
       <img src="${p.img}" alt="${escapeHtml(p.title)}">
-      <div class="answer">${p.type === "card" ? cardPicker() : textInput(p.type)}
+      <div class="answer">${p.type === "card" ? cardPicker() : textInput(p)}
         <div class="msg"></div>
       </div>
       <div class="solved-tag">答對了！</div>
@@ -159,10 +159,10 @@ $("backBtn").onclick = () => history.back();
 addEventListener("popstate", closePuzzle); // 手機返回鍵也能回列表
 $("zoom").onclick = () => $("zoom").classList.add("hidden");
 
-function textInput(type) {
-  const attrs = type === "number"
-    ? `inputmode="numeric" pattern="[0-9]*" placeholder="輸入數字"`
-    : `placeholder="輸入答案（英文大小寫皆可）" autocapitalize="off"`;
+function textInput(p) {
+  const attrs = p.type === "number"
+    ? `inputmode="numeric" pattern="[0-9]*" placeholder="${escapeHtml(p.placeholder || "輸入數字")}"`
+    : `placeholder="${escapeHtml(p.placeholder || "輸入答案（英文大小寫皆可）")}" autocapitalize="off"`;
   return `<div class="row"><input class="input" ${attrs} autocomplete="off"><button class="btn">送出</button></div>`;
 }
 
