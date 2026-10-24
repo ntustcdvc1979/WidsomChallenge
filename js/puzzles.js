@@ -62,7 +62,7 @@ export const PUZZLE_LIST = [
     placeholder: "輸入中文答案",
     img: "img/nervous.webp",
     type: "text",
-    hashes: ["9c5d6ac81bbf80065d10aa20d037f0faeeccbed2fce9074f0537cdd93a119f52"],
+    hashes: ["c55d2edfb69e2df09130eb3101f9b4ef41d570807ef38e9a71fecf8c6f10f547"],
   },
   {
     id: "shapes",
